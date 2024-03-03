@@ -144,8 +144,8 @@ if __name__ == '__main__':
             # 결과를 부동소수점 텐서로 변환
             fmask = fmask.float()        
             # pred_x = pred_x.view(1, 50, pred_x.shape[1], pred_x.shape[2]) #nsample, batch, seqlen, dim
-            if random.random() < 0.001:
-                print(f"mask: {observed_mask.sum(), fmask.sum()}")
+            # if random.random() < 0.001:
+            #     print(f"mask: {observed_mask.sum(), fmask.sum()}")
             #     print("predx", pred_x.shape, pred_x[0, :, :])
 
             
@@ -162,8 +162,8 @@ if __name__ == '__main__':
             pred_x = pred_x.view(args.k_iwae, batch_len, pred_x.shape[1], pred_x.shape[2]) #nsample, batch, seqlen, dim
             # z0: torch.Size([50(batch), 128(rftp), 20(ldim)]), out: torch.Size([50, 128, 40]), observed_data: torch.Size([50, 203, 41]), observed_tp: torch.Size([50, 203]), pred_y: torch.Size([50, 2])
             # compute loss
-            if random.random() < 0.001:
-                print("itr, predx", pred_x.shape, pred_x[0, 0, :, :])
+            # if random.random() < 0.001:
+            #     print("itr, predx", pred_x.shape, pred_x[0, 0, :, :])
             
             logpx, analytic_kl = utils.compute_losses(
                 dim, train_batch, qz0_mean, qz0_logvar, pred_x, args, device)
