@@ -139,10 +139,9 @@ if __name__ == '__main__':
             
             nmask = probabilistic_mask_update(observed_mask, 11, 5, 10, args.beta) 
             
-            fmask = torch.logical_or(nmask > 0, observed_mask > 0)
 
             # 결과를 부동소수점 텐서로 변환
-            fmask = fmask.float()        
+            fmask = nmask        
             # pred_x = pred_x.view(1, 50, pred_x.shape[1], pred_x.shape[2]) #nsample, batch, seqlen, dim
             # if random.random() < 0.001:
             #     print(f"mask: {observed_mask.sum(), fmask.sum()}")

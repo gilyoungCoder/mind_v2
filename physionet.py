@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
 import matplotlib.pyplot as plt
-import utils
 
 
 ## returns max, min val feature list among records
@@ -30,6 +29,9 @@ def get_data_min_max(records, device):
             else:
                 batch_max.append(-inf)
                 batch_min.append(inf)
+        batch_max = [x.to(device) for x in batch_max]
+        batch_min = [x.to(device) for x in batch_min]
+
         batch_max = torch.stack(batch_max)
         batch_min = torch.stack(batch_min)
 
@@ -202,6 +204,8 @@ class PhysioNet(object):
                     for l in lines[1:]:
                         total += 1
                         time, param, val = l.split(",")
+                        if float(val) == -1:
+                            continue
                         # hours
                         time = float(time.split(":")[0]) + float(time.split(":")[1]) / 60.0
                         # 계산 속도 향상을 위한 시간 단위 부여
@@ -291,7 +295,42 @@ class PhysioNet(object):
     def __len__(self):
         return len(self.data)
 
+    def visualize(self, timesteps, data, mask, plot_name):
+        width = 15
+        height = 15
 
+        ## 3번이상 입력이 있는 특성 선별, 3이상이 되면 true 아니면 false
+        non_zero_attributes = (torch.sum(mask, 0) > 2).numpy()
+
+        non_zero_idx = [i for i in range(len(non_zero_attributes)) if non_zero_attributes[i]]
+        n_non_zero = sum(non_zero_attributes)
+
+        # non_zero_idx를 통해서 3번 이상 등장하는 feature에 대해서 mask와 data(vals 각 feature의 시간에 따른 값들) 생성
+        mask = mask[:, non_zero_idx]
+        data = data[:, non_zero_idx]
+
+        params_non_zero = [self.params[i] for i in non_zero_idx]
+        params_dict = {k: i for i, k in enumerate(params_non_zero)}
+
+        n_col = 3
+        n_row = n_non_zero // n_col + (n_non_zero % n_col > 0)
+        fig, ax_list = plt.subplots(n_row, n_col, figsize=(width, height), facecoloer="white")
+
+        for i in range(n_non_zero):
+            param = params_non_zero[i]
+            param_id = params_dict[param]
+
+            tp_mask = mask[:, param_id].long()
+
+            tp_cur_param = timesteps[tp_mask == 1.0]
+            data_cur_param = data[tp_mask == 1.0, param_id]
+
+            ax_list[i // n_col, i % n_col].plot(tp_cur_param.numpy(), data_cur_param.numpy(), marker="o")
+            ax_list[i // n_col, i % n_col].set_title(param)
+
+        fig.tight_layout()
+        fig.savefig(plot_name)
+        plt.close(fig)
 
 
 
